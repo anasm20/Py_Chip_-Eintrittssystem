@@ -6,7 +6,6 @@ class EntrySystem:
         self.conn = sqlite3.connect(database_name)
         self.create_tables()
         self.cursor = self.conn.cursor()
-        self.current_chip_id = 1000  # Startwert für die Chip-ID
 
     def create_tables(self):
         self.conn.execute('''
@@ -25,11 +24,10 @@ class EntrySystem:
         self.conn.commit()
 
     def register_user(self, username):
-        # Generiere eine eindeutige Chip-ID und erhöhe die aktuelle Chip-ID
-        chip_id = self.current_chip_id
-        self.current_chip_id += 1
-        self.cursor.execute("INSERT INTO users (chip_id, username) VALUES (?, ?)", (chip_id, username))
+        self.cursor.execute("INSERT INTO users (username) VALUES (?)", (username,))
         self.conn.commit()
+        self.cursor.execute("SELECT chip_id FROM users WHERE username = ?", (username,))
+        chip_id = self.cursor.fetchone()[0]
         return f"User registered successfully. Your chip ID is {chip_id}"
 
     def check_access(self, chip_id):
@@ -51,7 +49,6 @@ def main():
     entry_system = EntrySystem(database_name)
 
     while True:
-        #print("Willkommen in Chip_Eintrittssystem. Wähle 1,2 oder 3")
         print("1. Register User")
         print("2. Check Access")
         print("3. Exit")
